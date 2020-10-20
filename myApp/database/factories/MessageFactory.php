@@ -1,0 +1,33 @@
+<?php
+
+namespace Database\Factories;
+
+use App\Models\Message;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
+
+class MessageFactory extends Factory
+{
+    /**
+     * The name of the factory's corresponding model.
+     *
+     * @var string
+     */
+    protected $model = Message::class;
+
+    /**
+     * Define the model's default state.
+     *
+     * @return array
+     */
+    public function definition()
+    {
+        return [
+            'content' => $this->faker->text(100),
+            'user_id' => User::factory(),
+            'created_at' => $this->faker->date('Y-m-d', now()),
+            'updated_at' => $this->faker->date('Y-m-d', now()),
+        ];
+    }
+}
