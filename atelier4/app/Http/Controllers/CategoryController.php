@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
 use Illuminate\Http\Request;
+use Validator;
 
 class CategoryController extends Controller
 {
@@ -13,7 +15,10 @@ class CategoryController extends Controller
      */
     public function index()
     {
-        //
+        $PerPage= 5;
+        $all= Category::orderBy('Created_at','desc')->paginate($PerPage);
+
+        return view('category.index',['all'=>$all]);
     }
 
     /**
@@ -23,7 +28,7 @@ class CategoryController extends Controller
      */
     public function create()
     {
-        //
+        return view('category.create');
     }
 
     /**
@@ -34,7 +39,20 @@ class CategoryController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $validator = Validator::make($request->all(), [
+            'name' => 'bail|required|between:5,20|alpha',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+        else {
+            $c= new Category();
+            $c->name=$request->name;
+            $c->save();
+        }
+
+        return redirect('category')->with('message','La catégorie a été ajoutée avec succés');;
     }
 
     /**
@@ -45,7 +63,8 @@ class CategoryController extends Controller
      */
     public function show($id)
     {
-        //
+        $category = Category::find($id);
+        return view ('category.show')->with('category',$category);
     }
 
     /**
@@ -56,7 +75,8 @@ class CategoryController extends Controller
      */
     public function edit($id)
     {
-        //
+        $category = Category::find($id);
+        return view('category.edit',['category'=>$category]);
     }
 
     /**
@@ -68,7 +88,10 @@ class CategoryController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $category = Category::find($id);
+        $category->fill($request->all());
+        $category->save();
+        return redirect()->route('category.index');
     }
 
     /**
@@ -79,6 +102,8 @@ class CategoryController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $category = Category::find($id);
+        $category->delete();
+        return redirect('category')->with('success','Category Deleted');
     }
 }

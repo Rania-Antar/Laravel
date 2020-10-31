@@ -2,10 +2,18 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Category;
+use App\Models\Product;
+use App\Models\UserProduct;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class UserProductController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth')->only('create');
+    }
     /**
      * Display a listing of the resource.
      *
@@ -13,7 +21,9 @@ class UserProductController extends Controller
      */
     public function index()
     {
-        //
+        $PerPage= 5;
+        $all = $products = Auth::user()->products()->paginate($PerPage);
+        return view('userProduct.index')->with('all',$all);
     }
 
     /**
@@ -23,7 +33,8 @@ class UserProductController extends Controller
      */
     public function create()
     {
-        //
+        $categories= Category::all();
+        return view('userProduct.create')->with('categories',$categories);
     }
 
     /**
@@ -34,7 +45,13 @@ class UserProductController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $product= Product::create($request->all());
+        $p= new UserProduct();
+        $p['user_id'] = Auth::user()->id;
+        $p['product_id'] = $product->id;
+        $p->save();
+        #$product->users()->attach(Auth::user());
+        return redirect()->route('userProduct.index');
     }
 
     /**
@@ -45,7 +62,8 @@ class UserProductController extends Controller
      */
     public function show($id)
     {
-        //
+        $product = Product::find($id);
+        return view ('userProduct.show')->with('product',$product);
     }
 
     /**
@@ -56,7 +74,9 @@ class UserProductController extends Controller
      */
     public function edit($id)
     {
-        //
+        $product = Product::find($id);
+        $categories= Category::all();
+        return view('userProduct.edit',['product'=>$product , 'categories'=>$categories]);
     }
 
     /**
@@ -68,7 +88,10 @@ class UserProductController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        $product = Product::find($id);
+        $product->fill($request->all());
+        $product->save();
+        return redirect('userProduct')->with('success','Your Product Updated');
     }
 
     /**
@@ -79,6 +102,8 @@ class UserProductController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $product = Product::find($id);
+        $product ->delete();
+        return redirect('userProduct')->with('success','Your Product Deleted');
     }
 }
